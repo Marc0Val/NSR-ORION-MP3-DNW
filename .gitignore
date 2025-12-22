@@ -1,0 +1,10 @@
+# Datos de música (Local)
+DescargasXD/
+
+# Entorno y Secretos
+.env
+__pycache__/
+*.pyc
+
+# Logs de sistema
+*.log
