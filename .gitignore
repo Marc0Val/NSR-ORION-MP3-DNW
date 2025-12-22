@@ -8,3 +8,5 @@ __pycache__/
 
 # Logs de sistema
 *.log
+# Configuraciones privadas
+config/users_config.json

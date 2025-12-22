@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  # El Músculo: Encargado de descargas y telemetría
+  harvester:
+    build: 
+      context: .
+      dockerfile: ./src/harvester/Dockerfile
+    container_name: orion_harvester
+    restart: unless-stopped
+    volumes:
+      # Mapeamos la carpeta local al contenedor según la variable de entorno
+      - ${BASE_STORAGE_PATH}:/app/downloads
+      - ./src:/app/src
+      - ./config:/app/config
+    environment:
+      - MQTT_BROKER=${MQTT_BROKER}
+      - BASE_STORAGE_PATH=/app/downloads
+    networks:
+      - orion_network
+
+networks:
+  orion_network:
+    driver: bridge
