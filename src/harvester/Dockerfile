@@ -1,6 +1,6 @@
-FROM python:3.9-slim
+FROM python:3.10-slim
 
-# Instalación de dependencias del sistema (FFmpeg es el corazón de la conversión)
+# Actualización de imagen para eliminar avisos de deprecación
 RUN apt-get update && apt-get install -y \
     ffmpeg \
     && rm -rf /var/lib/apt/lists/*

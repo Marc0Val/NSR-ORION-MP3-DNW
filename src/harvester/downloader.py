@@ -47,6 +47,14 @@ def cosechar_musica():
                 ydl.download([playlist_url])
 
 if __name__ == "__main__":
-    logging.info("Motor Harvester activado. Iniciando ciclo de descarga...")
-    cosechar_musica()
-    logging.info("Ciclo de cosecha completado. Entrando en modo reposo.")
+    # Extraemos el intervalo de la configuración (convertido a segundos)
+    config = cargar_configuracion()
+    intervalo = config['config_global'].get('intervalo_sincronizacion_horas', 6) * 3600
+    
+    logging.info(f"Motor Harvester activado. Ciclo de órbita: cada {intervalo/3600} horas.")
+    
+    while True:
+        cosechar_musica()
+        logging.info(f"Ciclo completado. Entrando en hibernación por {intervalo/3600} horas...")
+        # El script se mantiene vivo, pero en reposo, estabilizando el Eje H
+        time.sleep(intervalo)
