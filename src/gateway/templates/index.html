@@ -91,4 +91,12 @@
       </section>
     </div>
   </body>
+  <script>
+    if ("service-worker" in navigator) {
+      navigator.serviceWorker
+        .register("/static/sw.js")
+        .then(() => console.log("O.R.I.O.N. > Centinela Offline Registrado"))
+        .catch((err) => console.log("O.R.I.O.N. > Error de Registro:", err));
+    }
+  </script>
 </html>
