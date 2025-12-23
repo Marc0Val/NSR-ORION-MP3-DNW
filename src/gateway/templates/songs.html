@@ -58,21 +58,31 @@
         box-sizing: border-box;
         margin-bottom: 1rem;
       }
-      #sync-button {
-        width: 100%;
+      .button-group {
+        display: flex;
+        gap: 0.5rem;
+      }
+      #sync-button, #shuffle-play-button {
+        flex: 1;
         padding: 0.8rem;
-        background-color: #1a2b1a;
-        border: 1px solid #0f0;
-        color: #0f0;
-        font-weight: bold;
         border-radius: 6px;
         cursor: pointer;
         font-size: 0.9rem;
+        font-weight: bold;
         transition: background-color 0.2s;
       }
-      #sync-button:hover {
-        background-color: #2a4b2a;
+      #sync-button {
+        background-color: #1a2b1a;
+        border: 1px solid #0f0;
+        color: #0f0;
       }
+      #sync-button:hover { background-color: #2a4b2a; }
+      #shuffle-play-button {
+        background-color: #222;
+        border: 1px solid #888;
+        color: #ccc;
+      }
+      #shuffle-play-button:hover { background-color: #333; }
       .song-list h2 {
         font-size: 1.1rem;
         color: #888;
@@ -122,8 +132,29 @@
         padding: 0.5rem;
         box-sizing: border-box;
       }
-      audio {
-        width: 100%;
+      audio { width: 100%; }
+      #help-button {
+        position: fixed; bottom: 6rem; right: 1.5rem; width: 50px; height: 50px;
+        background-color: #0f0; color: #000; border-radius: 50%; display: flex;
+        align-items: center; justify-content: center; font-size: 1.8rem;
+        font-weight: bold; cursor: pointer; z-index: 1000;
+      }
+      #help-modal {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background-color: rgba(0, 0, 0, 0.8); display: flex; align-items: center;
+        justify-content: center; z-index: 1001; opacity: 0; visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+      }
+      #help-modal.visible { opacity: 1; visibility: visible; }
+      .modal-content {
+        background-color: #111; border: 1px solid #333; border-radius: 8px;
+        padding: 2rem; width: 90%; max-width: 500px; position: relative;
+      }
+      .modal-content h3 { color: #0f0; margin-top: 0; }
+      .modal-content p { color: #ccc; line-height: 1.6; }
+      .modal-content .close-button {
+        position: absolute; top: 1rem; right: 1rem; font-size: 1.5rem;
+        color: #888; cursor: pointer;
       }
     </style>
   </head>
@@ -135,12 +166,11 @@
       </header>
 
       <section class="controls-container">
-        <input
-          type="text"
-          id="search-bar"
-          placeholder="Buscar en la biblioteca..."
-        />
-        <button id="sync-button">Sincronizar Biblioteca</button>
+        <input type="text" id="search-bar" placeholder="Buscar en la biblioteca..."/>
+        <div class="button-group">
+          <button id="shuffle-play-button">Reproducción Aleatoria</button>
+          <button id="sync-button">Sincronizar Biblioteca</button>
+        </div>
       </section>
 
       <section class="song-list">
@@ -150,18 +180,8 @@
           <div class="song-item">
             <span class="song-title">{{ song.replace('.opus', '') }}</span>
             <div class="song-actions">
-              <span
-                class="play-icon"
-                data-src="/stream/{{ user_id }}/{{ song|urlencode }}"
-                >&#9654;</span
-              >
-              <!-- Play Icon -->
-              <a
-                href="/stream/{{ user_id }}/{{ song|urlencode }}"
-                download="{{ song }}"
-                >&#x21E3;</a
-              >
-              <!-- Download Icon -->
+              <span class="play-icon" data-src="/stream/{{ user_id }}/{{ song|urlencode }}">&#9654;</span>
+              <a href="/stream/{{ user_id }}/{{ song|urlencode }}" download="{{ song }}">&#x21E3;</a>
             </div>
           </div>
           {% endfor %}
@@ -173,19 +193,31 @@
       <audio id="audio-player" controls></audio>
     </div>
 
+    <div id="help-button">?</div>
+    <div id="help-modal">
+      <div class="modal-content">
+        <span class="close-button">&times;</span>
+        <h3>Ayuda de Biblioteca</h3>
+        <p><strong>&#9654; (Play):</strong> Inicia la reproducción de una canción en el reproductor inferior.</p>
+        <p><strong>&#x21E3; (Descargar):</strong> Guarda el archivo .opus directamente en tu dispositivo.</p>
+        <p><strong>Reproducción Aleatoria:</strong> Inicia la reproducción con una canción al azar de la lista visible.</p>
+        <p><strong>Sincronizar:</strong> Pide al sistema que busque y descargue nuevas canciones de tus playlists.</p>
+      </div>
+    </div>
+
     <script>
       document.addEventListener("DOMContentLoaded", function () {
         const player = document.getElementById("audio-player");
-        const songItems = document.querySelectorAll(".song-item");
+        const songItems = Array.from(document.querySelectorAll(".song-item"));
         const searchBar = document.getElementById("search-bar");
         const syncButton = document.getElementById("sync-button");
+        const shuffleButton = document.getElementById("shuffle-play-button");
         let currentActiveItem = null;
 
-        // --- Lógica de Reproducción ---
-        document.querySelectorAll(".play-icon").forEach((icon) => {
-          icon.addEventListener("click", function () {
-            const songSrc = this.getAttribute("data-src");
-            const parentItem = this.closest(".song-item");
+        function playSong(songItem) {
+            if (!songItem) return;
+            const playIcon = songItem.querySelector(".play-icon");
+            const songSrc = playIcon.getAttribute("data-src");
 
             player.src = songSrc;
             player.load();
@@ -194,50 +226,58 @@
             if (currentActiveItem) {
               currentActiveItem.classList.remove("active");
             }
-            parentItem.classList.add("active");
-            currentActiveItem = parentItem;
-          });
+            songItem.classList.add("active");
+            currentActiveItem = songItem;
+        }
+
+        songItems.forEach(item => {
+            item.querySelector(".play-icon").addEventListener("click", () => playSong(item));
         });
 
-        // --- Lógica de Búsqueda ---
         searchBar.addEventListener("input", function () {
           const query = this.value.toLowerCase();
           songItems.forEach((item) => {
-            const title = item
-              .querySelector(".song-title")
-              .textContent.toLowerCase();
-            if (title.includes(query)) {
-              item.style.display = "flex";
-            } else {
-              item.style.display = "none";
-            }
+            const title = item.querySelector(".song-title").textContent.toLowerCase();
+            item.style.display = title.includes(query) ? "flex" : "none";
           });
         });
 
-        // --- Lógica de Sincronización ---
         syncButton.addEventListener("click", function () {
-          this.textContent = "Solicitando...";
-          this.disabled = true;
-
+          this.textContent = "Solicitando..."; this.disabled = true;
           fetch("/request_update", { method: "POST" })
-            .then((response) => response.json())
-            .then((data) => {
+            .then(res => res.json())
+            .then(data => {
               this.textContent = "¡Señal Enviada!";
-              console.log("O.R.I.O.N. >", data.status);
-              setTimeout(() => {
-                this.textContent = "Sincronizar Biblioteca";
-                this.disabled = false;
-              }, 2000);
-            })
-            .catch((err) => {
+              setTimeout(() => { this.textContent = "Sincronizar Biblioteca"; this.disabled = false; }, 2000);
+            }).catch(err => {
               this.textContent = "Error en la Señal";
-              console.error("O.R.I.O.N. > Error de sincronización:", err);
-              setTimeout(() => {
-                this.textContent = "Sincronizar Biblioteca";
-                this.disabled = false;
-              }, 3000);
+              setTimeout(() => { this.textContent = "Sincronizar Biblioteca"; this.disabled = false; }, 3000);
             });
         });
+
+        shuffleButton.addEventListener("click", function() {
+            const visibleSongs = songItems.filter(item => item.style.display !== 'none');
+            if (visibleSongs.length > 0) {
+                const randomSong = visibleSongs[Math.floor(Math.random() * visibleSongs.length)];
+                playSong(randomSong);
+            }
+        });
+
+        player.addEventListener("ended", function() {
+            const visibleSongs = songItems.filter(item => item.style.display !== 'none');
+            const currentIndex = visibleSongs.indexOf(currentActiveItem);
+            if (currentIndex !== -1 && visibleSongs.length > 0) {
+                const nextIndex = (currentIndex + 1) % visibleSongs.length; // Loop back to start
+                playSong(visibleSongs[nextIndex]);
+            }
+        });
+
+        const helpButton = document.getElementById("help-button");
+        const helpModal = document.getElementById("help-modal");
+        const closeModalButton = document.querySelector(".close-button");
+        helpButton.addEventListener("click", () => helpModal.classList.add("visible"));
+        closeModalButton.addEventListener("click", () => helpModal.classList.remove("visible"));
+        helpModal.addEventListener("click", (e) => { if (e.target === helpModal) helpModal.classList.remove("visible"); });
       });
     </script>
   </body>
