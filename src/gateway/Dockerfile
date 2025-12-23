@@ -2,12 +2,13 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
-# Instalación de librerías de Python
+# Instalación de dependencias mínimas para mantener la agilidad del NSR
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copiamos la lógica del Gateway
+# El código se mapeará vía volumen en docker-compose para desarrollo fluido
 COPY . .
 
-# Comando de inicio del servidor web
+EXPOSE 5000
+
 CMD ["python", "app.py"]
