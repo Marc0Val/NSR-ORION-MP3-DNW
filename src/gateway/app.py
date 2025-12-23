@@ -1,6 +1,7 @@
 from flask import Flask, render_template, send_from_directory, jsonify
 import os
 import json
+import time
 
 app = Flask(__name__)
 
@@ -35,6 +36,20 @@ def list_songs(user_id):
 def stream_song(user_id, filename):
     # Entrega directa del archivo para streaming o descarga
     return send_from_directory(os.path.join(DOWNLOADS_PATH, user_id), filename)
+
+@app.route('/request_update', methods=['POST'])
+def request_update():
+    config_dir = '/app/config'
+    trigger_path = os.path.join(config_dir, 'trigger.json')
+    
+    # Salvaguarda: Crear el directorio si no existe
+    if not os.path.exists(config_dir):
+        os.makedirs(config_dir)
+        
+    with open(trigger_path, 'w') as f:
+        json.dump({"trigger": True, "timestamp": time.time()}, f)
+    
+    return jsonify({"status": "Cosecha solicitada al NSR"}), 202
 
 if __name__ == '__main__':
     # El NSR opera en el puerto 5000 para el panel de control

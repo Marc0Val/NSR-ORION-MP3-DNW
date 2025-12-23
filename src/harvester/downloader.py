@@ -74,11 +74,24 @@ def cosechar_musica():
     
     actualizar_stats(base_path)
 
+def check_trigger():
+    path = '/app/config/trigger.json'
+    if os.path.exists(path):
+        os.remove(path) # Consumimos la señal
+        return True
+    return False
+
 if __name__ == "__main__":
     config = cargar_configuracion()
-    intervalo = config['config_global'].get('intervalo_sincronizacion_horas', 6) * 3600
+    intervalo_base = config['config_global'].get('intervalo_sincronizacion_horas', 6) * 3600
+    ultimo_check = 0
+
     while True:
-        logging.info("Iniciando ciclo de transmutación de datos...")
-        cosechar_musica()
-        logging.info(f"Hibernando por {intervalo/3600} horas...")
-        time.sleep(intervalo)
+        ahora = time.time()
+        # Se activa por tiempo O por petición del usuario
+        if ahora - ultimo_check > intervalo_base or check_trigger():
+            logging.info("Señal detectada o ciclo cumplido. Iniciando transmutación...")
+            cosechar_musica()
+            ultimo_check = ahora
+        
+        time.sleep(30) # El motor vigila la señal cada 30 seg

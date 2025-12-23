@@ -1,7 +1,7 @@
 services:
   # El Músculo: Encargado de descargas y telemetría
   harvester:
-    build: 
+    build:
       context: ./src/harvester
       dockerfile: Dockerfile
     container_name: orion_harvester
@@ -15,7 +15,7 @@ services:
       - BASE_STORAGE_PATH=/app/downloads
     networks:
       - orion_network
-  
+
   gateway:
     build:
       context: ./src/gateway
@@ -27,6 +27,7 @@ services:
     volumes:
       - ${BASE_STORAGE_PATH}:/app/downloads
       - ./src/gateway:/app
+      - ./config:/app/config # <--- Agregue esta línea fundamental
     environment:
       - BASE_STORAGE_PATH=/app/downloads
     networks:
