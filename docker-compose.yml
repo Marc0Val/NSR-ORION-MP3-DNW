@@ -15,6 +15,22 @@ services:
       - BASE_STORAGE_PATH=/app/downloads
     networks:
       - orion_network
+  
+  gateway:
+    build:
+      context: ./src/gateway
+      dockerfile: Dockerfile
+    container_name: orion_gateway
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    volumes:
+      - ${BASE_STORAGE_PATH}:/app/downloads
+      - ./src/gateway:/app
+    environment:
+      - BASE_STORAGE_PATH=/app/downloads
+    networks:
+      - orion_network
 
 networks:
   orion_network:
