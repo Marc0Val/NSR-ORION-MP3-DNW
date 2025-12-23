@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>O.R.I.O.N. | Gateway</title>
+    <style>
+      body {
+        background-color: #000;
+        color: #eee;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        margin: 0;
+        padding: 1.5rem;
+        display: flex;
+        justify-content: center;
+      }
+      .container {
+        width: 100%;
+        max-width: 700px;
+      }
+      header {
+        text-align: center;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #333;
+        margin-bottom: 2rem;
+      }
+      header h1 {
+        font-size: 1.8rem;
+        margin: 0;
+        color: #0f0;
+        font-weight: bold;
+      }
+      .status {
+        font-size: 0.9rem;
+        color: #999;
+        text-align: center;
+        margin-bottom: 2.5rem;
+        line-height: 1.6;
+      }
+      .status span {
+        color: #fff;
+        font-weight: bold;
+      }
+      .user-list h2 {
+        font-size: 1.1rem;
+        color: #888;
+        text-align: center;
+        margin-bottom: 1rem;
+        border-top: 1px solid #333;
+        padding-top: 2rem;
+      }
+      .user-card {
+        border: 1px solid #333;
+        padding: 1rem 1.5rem;
+        margin-bottom: 0.8rem;
+        border-radius: 6px;
+        text-decoration: none;
+        color: #eee;
+        display: block;
+        transition: border-color 0.2s ease;
+      }
+      .user-card:hover {
+        border-color: #0f0;
+      }
+      .user-card h3 {
+        margin: 0;
+        font-size: 1.1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>O.R.I.O.N.</h1>
+      </header>
+
+      <section class="status">
+        Sistema: <span style="color: #0f0">EN LÍNEA</span><br />
+        Almacenamiento Libre: <span>{{ stats.storage_free_gb }} GB</span><br />
+        Última Sincronización: <span>{{ stats.last_sync }}</span>
+      </section>
+
+      <section class="user-list">
+        <h2>Bibliotecas Disponibles</h2>
+        {% for user in usuarios %}
+        <a href="/user/{{ user }}" class="user-card">
+          <h3>Usuario: {{ user }}</h3>
+        </a>
+        {% endfor %}
+      </section>
+    </div>
+  </body>
+</html>
