@@ -4,6 +4,7 @@ import json
 import yt_dlp
 import logging
 import shutil
+import glob
 
 logging.basicConfig(level=logging.INFO, format='O.R.I.O.N. > %(message)s')
 
@@ -58,6 +59,18 @@ def cosechar_musica():
             opts['outtmpl'] = f"{base_path}/{usuario['id']}/%(title)s.%(ext)s"
             with yt_dlp.YoutubeDL(opts) as ydl:
                 ydl.download([playlist_url])
+        
+        # --- NUEVA LÓGICA DE LIMPIEZA DE RESIDUOS ---
+        ruta_usuario = os.path.join(base_path, usuario['id'])
+        # Buscamos archivos de imagen que ya no necesitamos tras la incrustación
+        for imagen_residual in glob.glob(f"{ruta_usuario}/*.jpg") + \
+                               glob.glob(f"{ruta_usuario}/*.webp") + \
+                               glob.glob(f"{ruta_usuario}/*.png"):
+            try:
+                os.remove(imagen_residual)
+                logging.info(f"Residuo eliminado: {os.path.basename(imagen_residual)}")
+            except Exception as e:
+                logging.warning(f"No se pudo eliminar el residuo {imagen_residual}: {e}")
     
     actualizar_stats(base_path)
 
